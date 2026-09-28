@@ -12,7 +12,7 @@
   • <a target="_blank" href="https://console.chainstack.com/user/account/create">Start for free</a> •
 </p>
 
-# world-xyz-limit-orders
+# Limit orders on World prediction markets
 
 > [!NOTE]
 > Experimental. A reference implementation, not for production use. It places real orders with
@@ -26,32 +26,36 @@ How World works on chain: [world-xyz-research](https://github.com/chainstacklabs
 
 ## How it fits
 
-A **router** sends each trade to the **venue** with the best price for its whole size. World's app
-uses DFlow's prediction-market router, which picks between World's own market maker and public
-order books such as Manifest; Jupiter routes to Manifest books too. `mm` puts your limit orders
-on such a book, so whenever your price wins, the router fills you.
+Most trades on Solana go through a **router** (or aggregator), which checks every **venue** for the
+token pair and sends the whole trade to the best price for its size. For World's markets the
+venues are World's own market maker and public order books, where anyone can rest a limit order.
+World's app routes through DFlow's prediction-market router; Jupiter and other aggregators do the
+same for their users.
 
 ```
 World app ──► World's router (DFlow) ──┬──► World's market maker
-                                       └──► Manifest order book ◄── your limit orders (mm)
-Jupiter ───────────────────────────────────► Manifest order book
+                                       └──► public order book, e.g. Manifest ◄── your limit orders
+Jupiter, other aggregators ────────────────┘
 ```
 
-`mm probe` shows which venue each router picks right now.
+This repo implements the order-book side on Manifest: find World markets, get YES and NO tokens,
+rest and manage your orders, and check that the routers pick your book (`mm probe`). Other
+venues are in [TODO.md](TODO.md).
 
 ## What you need
 
 - Python 3.11+ and [uv](https://docs.astral.sh/uv/)
 - A Solana mainnet RPC endpoint
-- A new wallet with a little SOL — not your main one. With the
-  [Solana CLI](https://solana.com/docs/intro/installation):
+- A new wallet with a little SOL, not your main one
 
-  ```bash
-  solana-keygen new --outfile ~/mm-wallet.json
-  solana-keygen pubkey ~/mm-wallet.json        # the address to fund
-  ```
+Create the wallet with the [Solana CLI](https://solana.com/docs/intro/installation):
 
-  The file is the private key: keep it, and `.env`, out of git, and back it up.
+```bash
+solana-keygen new --outfile ~/mm-wallet.json
+solana-keygen pubkey ~/mm-wallet.json        # the address to fund
+```
+
+The file is the private key: keep it, and `.env`, out of git, and back it up.
 
 ## From SOL to a resting order
 
@@ -66,9 +70,13 @@ mm verify                                   # check its addresses on chain
 mm swap sol cash 0.5                        # SOL -> CASH
 mm split 10                                 # 10 CASH -> 10 YES + 10 NO
 mm create                                   # only if `mm use` found no Manifest book
-mm place ask 10 0.15                        # sell 10 YES at 0.15 CASH each
+mm place ask 10 0.15                        # GTC limit order*: sell 10 YES at 0.15 CASH each
 mm orders
 ```
+
+\* A GTC (good-till-cancelled) limit order waits on the book at your price until someone takes it
+or you cancel it, and never fills at a worse price than yours. If your price already beats the
+other side, such as an ask below the best bid, it fills at once.
 
 `mm use` writes the market to `market.json`: its tokens, World's accounts, and its Manifest book
 if one exists. Switch markets with `mm use <address> --force`; trade NO with `--side no`, or both
@@ -81,21 +89,8 @@ sending; scripts and agents add `--yes` to skip the prompt.
 mm place ask 10 0.15 --send                 # simulation, then: send on mainnet (real funds)? [y/N]
 ```
 
-## Commands
-
-A few worth knowing; `mm --help` lists all of them, `mm <command> --help` the details.
-
-| Command | Does |
-|---|---|
-| `markets --search X --prices` | Search every World market by question, with World's prices and any public book's |
-| `probe --size N` | Would World's router or Jupiter send a trade that size to your book, and at what price |
-| `simulate-fill bid\|ask SIZE` | Would your book fill if someone took it now, and would the taker pay SOL |
-| `reprice bid\|ask PRICE` | Move a whole side to one price in one transaction |
-| `fills` / `stats` | What filled, at what average price, and your net position |
-| `fork start` | A local copy of mainnet to practice on |
-
-Read commands take `--json` for scripts and agents. Each command is one short file in
-`mmkit/commands/`.
+For the full list of commands, run `mm --help`; `mm <command> --help` shows its options. Read
+commands take `--json` for scripts and agents.
 
 ## Practice on a fork
 
