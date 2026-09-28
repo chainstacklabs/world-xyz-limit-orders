@@ -1,0 +1,37 @@
+{
+  "name": "BTC-UP / CASH",
+  "base": {
+    "symbol": "BTC-UP",
+    "mint": "93gJ8Ct8xLUFdTu3MKttzb6KLBuE4RN9VRaHGUEmTemX",
+    "decimals": 6,
+    "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+  },
+  "quote": {
+    "symbol": "CASH",
+    "mint": "CASHx9KJUStyftLFWGvEVf59SGeG9sh5FfcnZMVPCASH",
+    "decimals": 6,
+    "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+  },
+  "counterpart": {
+    "symbol": "BTC-DN",
+    "mint": "7PVbdSQiuh4hHkmRBCVjRr9kUfiotc6XYzvfWxZXcm5Z",
+    "decimals": 6,
+    "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+  },
+  "collateral": {
+    "symbol": "CASH",
+    "mint": "CASHx9KJUStyftLFWGvEVf59SGeG9sh5FfcnZMVPCASH",
+    "decimals": 6,
+    "tokenProgram": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+  },
+  "issuer": {
+    "program": "prediCtPZCttYMvm2W3PtxmMxLmT1dtN7riU6Cxh6tM",
+    "ledger": "638vJXume9w4RMhxMUJLPgkoj8K9UhMJr2jKM8j6KWs",
+    "collateralVault": "GZEyYgkfNTYNahHbjLYf8h1W4XwXUsxpJ9GHL6j5jC1G"
+  },
+  "venue": {
+    "kind": "manifest",
+    "market": null,
+    "side": "yes"
+  }
+}

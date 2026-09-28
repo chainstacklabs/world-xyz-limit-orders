@@ -1,0 +1,6 @@
+/.env
+/market.json
+.venv/
+__pycache__/
+*.local.*
+.surfpool/
