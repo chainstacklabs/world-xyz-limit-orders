@@ -5,7 +5,7 @@ from decimal import Decimal
 import pytest
 from solders.pubkey import Pubkey
 
-from mmkit import routes, rpc, spl, taker
+from mmkit import routes, rpc, spl, taker, world
 from mmkit.config import Token
 from mmkit.venue import manifest
 
@@ -71,6 +71,15 @@ def test_unreachable_router_is_a_result(monkeypatch):
 
     monkeypatch.setattr(routes, "get_json", down)
     assert routes.world(Pubkey.default(), Pubkey.default(), 1).error == "unreachable or not JSON"
+
+
+def test_gated_world_router_says_why(monkeypatch):
+    def refuse(url, headers=None):
+        raise SystemExit("https://example/order: HTTP 404")
+
+    monkeypatch.setattr(routes, "get_json", refuse)
+    assert routes.world(Pubkey.default(), Pubkey.default(), 1).error == world.GATED
+    assert routes.jupiter(Pubkey.default(), Pubkey.default(), 1).error == "HTTP 404"
 
 
 # 3. taker

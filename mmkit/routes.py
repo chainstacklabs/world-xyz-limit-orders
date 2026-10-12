@@ -10,7 +10,7 @@ from mmkit.config import Config
 from mmkit.jupiter import API as JUPITER
 from mmkit.jupiter import SOL
 from mmkit.web import get_json
-from mmkit.world import CASH, ROUTER_HEADERS
+from mmkit.world import CASH, GATED, ROUTER_HEADERS
 from mmkit.world import ROUTER as WORLD
 
 
@@ -59,7 +59,8 @@ def _params(input_mint: Pubkey, output_mint: Pubkey, atoms: int) -> str:
 
 
 def world(input_mint: Pubkey, output_mint: Pubkey, atoms: int, side: str = "") -> Route:
-    return _quote("world", side, f"{WORLD}?{_params(input_mint, output_mint, atoms)}", ROUTER_HEADERS)
+    r = _quote("world", side, f"{WORLD}?{_params(input_mint, output_mint, atoms)}", ROUTER_HEADERS)
+    return Route(r.router, r.side, error=GATED) if r.error == "HTTP 404" else r
 
 
 def jupiter(input_mint: Pubkey, output_mint: Pubkey, atoms: int, side: str = "") -> Route:

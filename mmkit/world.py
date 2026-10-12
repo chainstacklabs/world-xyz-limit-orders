@@ -14,6 +14,7 @@ from urllib.parse import urlencode
 from solders.pubkey import Pubkey
 
 from mmkit import rpc
+from mmkit.jupiter import SOL
 from mmkit.web import get_json
 
 PROGRAM = Pubkey.from_string("prediCtPZCttYMvm2W3PtxmMxLmT1dtN7riU6Cxh6tM")
@@ -23,6 +24,7 @@ MARKET_DISC = bytes.fromhex("dbbed53700e3c69a")
 ROUTER = "https://aggregator-api-proxy.world-xyz.workers.dev/order"
 ONE = 10**6  # 1 CASH or 1 outcome token; World mints use 6 decimals
 ROUTER_HEADERS = {"origin": "https://world.xyz", "referer": "https://world.xyz/"}
+GATED = "World's router needs a browser check (Turnstile) now; no quotes for scripts"
 
 
 @dataclass(frozen=True)
@@ -128,6 +130,16 @@ def router_quote(input_mint: Pubkey, output_mint: Pubkey, atoms: int) -> int | N
     except (SystemExit, OSError, ValueError):
         return None
     return int(out) if out else None
+
+
+def gated() -> bool:
+    """True when World's router refuses scripts. Since 2026-10 it answers an empty 404 without a Turnstile token."""
+    q = urlencode({"inputMint": str(SOL), "outputMint": str(CASH), "amount": 10**7, "slippageBps": 100})
+    try:
+        get_json(f"{ROUTER}?{q}", ROUTER_HEADERS)
+    except SystemExit as e:
+        return str(e.code).endswith("HTTP 404")
+    return False
 
 
 def buy_price(m: Market, mint: Pubkey) -> Decimal | None:

@@ -12,6 +12,13 @@ A venue gets a module only if it passes all three, in order:
 | Phoenix | | | | | | |
 | OpenBook v2 | | | | | | |
 
+# World's price without its router
+
+World's router needs a Turnstile browser check since October 2026, so `mm` can't read World's
+quotes. Find out whether World's market maker keeps its prices in an on-chain account `mm` can
+read. If it does, use that for `probe` and `markets --prices`. If it doesn't, drop World's
+columns from both.
+
 # Order types to add
 
 `mm` places Manifest `Limit` orders only. Manifest's program has more; each needs its semantics

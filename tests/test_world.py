@@ -69,3 +69,22 @@ def test_world_prices_per_token(monkeypatch, world_bytes):
     assert world.sell_price(m, m.yes_mint) == Decimal("0.4")
     monkeypatch.setattr(world, "router_quote", lambda a, b, atoms: None)
     assert world.buy_price(m, m.yes_mint) is None and world.sell_price(m, m.yes_mint) is None
+
+
+def test_gated_router_answers_an_empty_404(monkeypatch):
+    # 2026-10-12: world.xyz sends a Turnstile JWT to the router; without it every path is an empty 404
+    def refuse(url, headers):
+        raise SystemExit(f"{world.ROUTER}: HTTP 404")
+
+    monkeypatch.setattr(world, "get_json", refuse)
+    assert world.gated()
+    monkeypatch.setattr(world, "get_json", lambda url, headers: {"outAmount": "1"})
+    assert not world.gated()
+
+
+def test_unreachable_router_is_not_called_gated(monkeypatch):
+    def down(url, headers):
+        raise SystemExit(f"{world.ROUTER}: unreachable or not JSON")
+
+    monkeypatch.setattr(world, "get_json", down)
+    assert not world.gated()

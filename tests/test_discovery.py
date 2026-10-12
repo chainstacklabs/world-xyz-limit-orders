@@ -120,6 +120,7 @@ def fake_world(monkeypatch, world_bytes):
     md = {m.yes_mint: {"symbol": t, "name": t, "uri": t} for m, t in zip(ms, ["CPI-A45-Y", "BTC-UP", "OLD-Y"])}
     monkeypatch.setattr(world, "list_markets", lambda: ms)
     monkeypatch.setattr(world, "metadata", lambda mints: md)
+    monkeypatch.setattr(world, "gated", lambda: False)
     monkeypatch.setattr(
         world,
         "questions",
@@ -221,3 +222,14 @@ def test_short_question(full, short):
     from mmkit import discovery
 
     assert discovery.short(full) == short
+
+
+def test_markets_prices_when_world_is_gated(monkeypatch, world_bytes):
+    fake_world(monkeypatch, world_bytes)
+    monkeypatch.setattr(world, "gated", lambda: True)
+    monkeypatch.setattr(world, "router_quote", lambda a, b, atoms: pytest.fail("no World quotes when gated"))
+    monkeypatch.setattr(books, "best", lambda k: books.Top(Decimal("0.2"), Decimal("0.4"), world.CASH))
+    r = CliRunner().invoke(cli.app, ["markets", "--prices", "--limit", "1", "--json"], env={})
+    rows = json.loads(r.stdout)
+    assert rows[0]["world_buy"] is None and rows[0]["book_bid"] == "0.2"
+    assert r.stderr.strip() == world.GATED
