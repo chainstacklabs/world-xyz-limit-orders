@@ -117,6 +117,9 @@ before each transaction.
   market's vaults. Exit before a market resolves.
 - **Data.** Markets, balances, books, and fills come from Solana; World's prices from its router;
   questions from `m.world.xyz`, cached in `~/.cache/mm/`; swaps from Jupiter.
+- **World's prices.** Since October 2026 World's router only answers its own web app, which passes
+  a Cloudflare Turnstile browser check first. `mm probe` and `mm markets --prices` say so and show
+  public-book and Jupiter prices only.
 
 ## For agents
 

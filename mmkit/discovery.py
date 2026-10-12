@@ -34,10 +34,12 @@ def rows(windows: bool, status: str | None, search: str | None) -> list[dict]:
     )
 
 
-def price(row: dict) -> dict:
+def price(row: dict, quote_world: bool = True) -> dict:
     """World's buy/sell for 1 YES, and the first public book's best bid/ask in its own quote currency."""
     m = row["_m"]
-    out = {"world_buy": world.buy_price(m, m.yes_mint), "world_sell": world.sell_price(m, m.yes_mint)}
+    out = {"world_buy": None, "world_sell": None}
+    if quote_world:
+        out = {"world_buy": world.buy_price(m, m.yes_mint), "world_sell": world.sell_price(m, m.yes_mint)}
     top = books.best(row["_books"][0].market) if row["_books"] else None
     return out | {
         "book_bid": top and top.bid,
@@ -46,9 +48,9 @@ def price(row: dict) -> dict:
     }
 
 
-def with_prices(rs: list[dict]) -> list[dict]:
+def with_prices(rs: list[dict], quote_world: bool = True) -> list[dict]:
     with ThreadPoolExecutor(8) as pool:
-        return [r | p for r, p in zip(rs, pool.map(price, rs))]
+        return [r | p for r, p in zip(rs, pool.map(lambda r: price(r, quote_world), rs))]
 
 
 def short(question: str | None) -> str | None:

@@ -4,7 +4,7 @@ from typing import Annotated
 
 import typer
 
-from mmkit import discovery
+from mmkit import discovery, world
 from mmkit.common import Json, emit
 
 Status = typer.Option(help="upcoming, live, ended, resolved or open")
@@ -22,7 +22,10 @@ def main(
 ) -> None:
     """List World markets: ticker, question, status, window end, public books, address."""
     rs = discovery.rows(windows, status, search)
-    shown = discovery.with_prices(rs[:limit]) if prices else rs[:limit]
+    gated = prices and world.gated()
+    if gated:
+        typer.echo(world.GATED, err=True)
+    shown = discovery.with_prices(rs[:limit], not gated) if prices else rs[:limit]
     if not as_json:
         shown = [discovery.table_row(r, prices) for r in shown]
     more = f" — showing {len(shown)}; narrow with --search or raise --limit" if len(rs) > len(shown) else ""
